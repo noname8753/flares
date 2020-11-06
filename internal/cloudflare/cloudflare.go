@@ -8,13 +8,12 @@ package cloudflare
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -24,21 +23,19 @@ const (
 
 // Cloudflare sets up authorization to the API.
 type Cloudflare struct {
-	API       string
-	AuthKey   string
-	AuthEmail string
-	Client    http.Client
+	API    string
+	Token  string
+	Client http.Client
 }
 
 // New returns a Cloudflare client
-func New(apiKey, apiEmail string) Cloudflare {
-	if apiKey == "" || apiEmail == "" {
+func New(token string) Cloudflare {
+	if token == "" {
 		panic(errNoAuthorization)
 	}
 	client := Cloudflare{
-		API:       "https://api.cloudflare.com/client/v4",
-		AuthKey:   apiKey,
-		AuthEmail: apiEmail,
+		API:   "https://api.cloudflare.com/client/v4",
+		Token: token,
 		Client: http.Client{
 			Timeout: time.Second * 30,
 		},
@@ -98,7 +95,7 @@ func (cf Cloudflare) Zones() (map[string]string, error) {
 			result[res.ID] = res.Name
 		}
 
-		pages := data.ResultInfo.TotalCount / maxPerPageValue
+		pages := data.ResultInfo.TotalPages
 		if count < pages {
 			count++
 			continue
@@ -174,8 +171,7 @@ func (cf Cloudflare) zoneIDFor(domain string) (string, error) {
 }
 
 func (cf Cloudflare) setAuthHeaders(req *http.Request) {
-	req.Header.Add("X-Auth-Key", cf.AuthKey)
-	req.Header.Add("X-Auth-Email", cf.AuthEmail)
+	req.Header.Add("Authorization", "Bearer "+cf.Token)
 }
 
 type response struct {
@@ -233,6 +229,7 @@ type response struct {
 	ResultInfo struct {
 		Page       int `json:"page"`
 		PerPage    int `json:"per_page"`
+		TotalPages int `json:"total_pages"`
 		Count      int `json:"count"`
 		TotalCount int `json:"total_count"`
 	} `json:"result_info"`

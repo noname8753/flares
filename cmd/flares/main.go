@@ -52,20 +52,13 @@ func main() {
 		},
 	}
 
-	var flagAPIKey string
-	var flagAPIEmail string
+	var flagToken string
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "key",
-			Usage:       "CloudFlare API key",
-			EnvVar:      "CF_API_KEY",
-			Destination: &flagAPIKey,
-		},
-		cli.StringFlag{
-			Name:        "email",
-			Usage:       "CloudFlare API email",
-			EnvVar:      "CF_API_EMAIL",
-			Destination: &flagAPIEmail,
+			Name:        "token",
+			Usage:       "CloudFlare Token",
+			EnvVar:      "CF_Token",
+			Destination: &flagToken,
 		},
 		cli.BoolFlag{
 			Name:   "all, a",
@@ -87,15 +80,14 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		if flagAPIKey == "" || flagAPIEmail == "" {
+		if flagToken == "" {
 			return errors.New(
-				"provide --key & --email flags\n" +
-					"or $CF_API_KEY & $CF_API_EMAIL" + " ENV variables\n" +
-					"in order to access CloudFlare.\n\n" +
-					"GOTO: https://dash.cloudflare.com/profile -> Global API Key -> View")
+				"provide --token flag\n" +
+					"or $CF_TOKEN " + " ENV variables\n" +
+					"in order to access CloudFlare.\n\n")
 		}
 
-		dns := cloudflare.New(flagAPIKey, flagAPIEmail)
+		dns := cloudflare.New(flagToken)
 
 		if c.Bool("all") {
 			zones, err := dns.Zones()
