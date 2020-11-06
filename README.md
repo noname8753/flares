@@ -11,4 +11,9 @@ files.
 [![PayPal](https://img.shields.io/badge/paypal-contribute-blue.svg?style=popout-square&logo=paypal)](https://www.paypal.com/pools/c/8fm4OKBYMa)
 
 Currently using it for simple backups. This version can utilize a cloudflare token with read-only acl
+
+
+Example:
+
+
 flares --token "<readonly cloudflare token>" --export --all
